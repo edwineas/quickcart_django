@@ -6,7 +6,7 @@ from rest_framework.decorators import permission_classes
 class ProductsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Products
-        fields = ['name', 'image']
+        fields = ['id','name', 'image']
 
 @permission_classes([AllowAny])
 class ShopsSerializer(serializers.ModelSerializer):
