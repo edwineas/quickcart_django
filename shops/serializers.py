@@ -18,4 +18,4 @@ class ShopsSerializer(serializers.ModelSerializer):
 class ShopViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shops
-        fields = ['name', 'address', 'phone_number', 'opening_time', 'closing_time', 'rating', 'image']
+        fields = ['id','name', 'address', 'phone_number', 'opening_time', 'closing_time', 'rating', 'image']
