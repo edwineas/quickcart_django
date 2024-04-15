@@ -1,0 +1,24 @@
+# .gitignore
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Django specific
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media
+
+# If you are using PostgreSQL
+*.env
+
+# Backup files
+*.bak
+
+# If you are using PyCharm
+.idea/
+
+# If you are using VS Code
+.vscode/
