@@ -9,7 +9,6 @@ __pycache__/
 *.pot
 *.pyc
 db.sqlite3
-media
 
 # If you are using PostgreSQL
 *.env
