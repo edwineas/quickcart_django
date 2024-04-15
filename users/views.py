@@ -59,8 +59,8 @@ class ShopkeeperRegisterView(generics.CreateAPIView):
         }
         shopkeeper_serializer = ShopkeeperSerializer(data=shopkeeper_data)
         if shopkeeper_serializer.is_valid():
-            shopkeeper_serializer.save()
-            return Response({'status': 'success', 'data': shopkeeper_serializer.data}, status=status.HTTP_201_CREATED)
+            shopkeeper = shopkeeper_serializer.save()
+            return Response({'status': 'success', 'data': shopkeeper_serializer.data, 'shopkeeper_id': shopkeeper.id}, status=status.HTTP_201_CREATED)
         else:
             user.delete()  # Delete the user instance if shopkeeper data is invalid
             return Response({'status': 'error', 'message': 'Invalid shopkeeper data', 'errors': shopkeeper_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='refresh_token'),
     path('api-auth/', include('rest_framework.urls')),
     path('register/', include('users.urls')),
+    path('shops/', include('shops.urls')),
 ]
 
 if settings.DEBUG:
