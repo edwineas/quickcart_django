@@ -2,8 +2,10 @@ from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import permission_classes
 from rest_framework.response import Response
-from .models import Products, Shops
-from .serializers import ProductsSerializer, ShopsSerializer, ShopViewSerializer
+from .models import Products, Shops, Inventory
+from .serializers import ProductsSerializer, ShopsSerializer, ShopViewSerializer, InventorySerializer
+from rest_framework.exceptions import NotFound
+
 
 @permission_classes([AllowAny])
 class ProductsListView(generics.ListAPIView):
@@ -28,3 +30,20 @@ class ShopCreateView(generics.CreateAPIView):
 class ShopListView(generics.ListAPIView):
     queryset = Shops.objects.all()
     serializer_class = ShopViewSerializer
+
+@permission_classes([AllowAny])
+class InventoryListView(generics.ListAPIView):
+    serializer_class = InventorySerializer
+
+    def get_queryset(self):
+        shop_id = self.kwargs['shop_id']
+        inventory_items = Inventory.objects.filter(shop_id=shop_id)
+        if not inventory_items:
+            raise NotFound('Shop not found')
+        return inventory_items
+
+@permission_classes([AllowAny])
+class InventoryUpdateView(generics.UpdateAPIView):
+    queryset = Inventory.objects.all()
+    serializer_class = InventorySerializer
+    lookup_field = 'id'
