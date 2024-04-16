@@ -1,5 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from users.models import Shopkeeper
 
 # model for Products
@@ -33,3 +35,15 @@ class Inventory(models.Model):
 
     def __str__(self):
         return f"{self.product.name} in {self.shop.name}"
+    
+@receiver(post_save, sender=Products)
+def create_inventory_for_new_product(sender, instance, created, **kwargs):
+    if created:
+        for shop in Shops.objects.all():
+            Inventory.objects.get_or_create(product=instance, shop=shop, defaults={'price': 0.0, 'quantity': 0})
+
+@receiver(post_save, sender=Shops)
+def create_inventory_for_new_shop(sender, instance, created, **kwargs):
+    if created:
+        for product in Products.objects.all():
+            Inventory.objects.get_or_create(shop=instance, product=product, defaults={'price': 0.0, 'quantity': 0})
