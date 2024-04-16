@@ -5,6 +5,7 @@ from .serializers import UserSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 from users.models import Customer, Shopkeeper
+from shops.models import Shops
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
@@ -25,7 +26,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             if Customer.objects.filter(user=user).exists():
                 token['role'] = 'customer'
             elif Shopkeeper.objects.filter(user=user).exists():
+                shopkeeper = Shopkeeper.objects.get(user=user)
+                shop = Shops.objects.get(shopkeeper=shopkeeper)
                 token['role'] = 'shopkeeper'
+                token['shop_id'] = shop.id        
             else:
                 token['role'] = 'unknown'
         except (Customer.DoesNotExist, Shopkeeper.DoesNotExist) as e:
@@ -43,6 +47,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         # Add extra responses here
         data['role'] = refresh['role']
         data['user_id'] = self.user.id
+        if refresh['role'] == 'shopkeeper':
+            data['shop_id'] = refresh['shop_id']
 
         return data
 
