@@ -1,8 +1,11 @@
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
 from .serializers import CustomerSerializer, ShopkeeperSerializer
 from django.contrib.auth.models import User
 from api.serializers import UserSerializer
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import permission_classes
 from rest_framework.permissions import AllowAny
 
 
@@ -64,3 +67,13 @@ class ShopkeeperRegisterView(generics.CreateAPIView):
         else:
             user.delete()  # Delete the user instance if shopkeeper data is invalid
             return Response({'status': 'error', 'message': 'Invalid shopkeeper data', 'errors': shopkeeper_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@permission_classes([AllowAny])
+class UserNameView(APIView):
+    def get(self, request, user_id, format=None):
+        try:
+            user = User.objects.get(pk=user_id)
+            return Response({'name': user.username}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
