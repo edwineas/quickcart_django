@@ -25,12 +25,15 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         try:
             if Customer.objects.filter(user=user).exists():
+                customer = Customer.objects.get(user=user)
                 token['role'] = 'customer'
+                token['customer_id'] = customer.id
             elif Shopkeeper.objects.filter(user=user).exists():
                 shopkeeper = Shopkeeper.objects.get(user=user)
                 shop = Shops.objects.get(shopkeeper=shopkeeper)
                 token['role'] = 'shopkeeper'
-                token['shop_id'] = shop.id        
+                token['shop_id'] = shop.id     
+                token['shopkeeper_id'] = shopkeeper.id 
             else:
                 token['role'] = 'unknown'
         except (Customer.DoesNotExist, Shopkeeper.DoesNotExist) as e:
@@ -61,6 +64,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data['user_id'] = self.user.id
         if refresh['role'] == 'shopkeeper':
             data['shop_id'] = refresh['shop_id']
+            data['shopkeeper_id'] = refresh['shopkeeper_id']
+        elif refresh['role'] == 'customer':
+            data['customer_id'] = refresh['customer_id']
 
         return data
 
