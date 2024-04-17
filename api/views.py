@@ -7,6 +7,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from users.models import Customer, Shopkeeper
 from shops.models import Shops
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import authenticate
+
 
 
 # Create your views here.
