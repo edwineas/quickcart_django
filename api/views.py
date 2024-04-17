@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
-from rest_framework import generics
+from rest_framework import generics, serializers
 from .serializers import UserSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -21,7 +21,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(cls, user):
         token = super().get_token(user)
 
-        # Add custom claims
         try:
             if Customer.objects.filter(user=user).exists():
                 token['role'] = 'customer'
@@ -38,6 +37,17 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
     
     def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+
+        if username and not User.objects.filter(username=username).exists():
+            raise serializers.ValidationError('User does not exist.', code='user_not_found')
+
+        user = authenticate(username=username, password=password)
+
+        if not user:
+            raise serializers.ValidationError('Incorrect password.', code='incorrect_password')
+
         data = super().validate(attrs)
 
         refresh = self.get_token(self.user)
