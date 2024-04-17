@@ -1,6 +1,6 @@
 from django.db import models
 from users.models import Customer
-from shops.models import Shops, Product
+from shops.models import Shops, Products
 
 class Order(models.Model):
     date = models.DateTimeField(auto_now_add=True)
@@ -14,6 +14,6 @@ class OrderShop(models.Model):
 
 class OrderProduct(models.Model):
     order_shop = models.ForeignKey(OrderShop, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Products, on_delete=models.CASCADE)
     product_price = models.DecimalField(max_digits=10, decimal_places=2)
     product_quantity = models.IntegerField()
