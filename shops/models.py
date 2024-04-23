@@ -24,9 +24,9 @@ class Shops(models.Model):
     image = models.ImageField(upload_to='shops/')
 
     def __str__(self):
-        return self.name
+        return str(self.id)
 
-# model for Inventory
+# model for Inventory   
 class Inventory(models.Model):
     shop = models.ForeignKey(Shops, on_delete=models.CASCADE)
     product = models.ForeignKey(Products, on_delete=models.CASCADE)
