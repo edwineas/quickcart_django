@@ -8,7 +8,7 @@ from users.models import Customer
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        fields = ['first_name', 'last_name']
+        fields = ['id', 'first_name', 'last_name']
 
 class OrderSerializer(serializers.ModelSerializer):
     customer = CustomerSerializer(read_only=True)
@@ -21,7 +21,7 @@ class OrderShopSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderShop
-        fields = ['order', 'shop', 'shop_name', 'shop_price', 'packet_picked', 'payment_received']
+        fields = ['id','order', 'shop', 'shop_name', 'shop_price', 'packet_picked', 'payment_received']
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -29,4 +29,11 @@ class OrderShopSerializer(serializers.ModelSerializer):
         representation['order'] = order_representation['id']
         representation['date'] = order_representation['date']
         representation['customer_name'] = f"{order_representation['customer']['first_name']} {order_representation['customer']['last_name']}"
+        representation['customer_id'] = order_representation['customer']['id']
         return representation
+
+
+class OrderProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderProduct
+        fields = ['product_name', 'product_price', 'product_quantity']

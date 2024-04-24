@@ -31,3 +31,4 @@ class OrderProduct(models.Model):
     
     def __str__(self):
         return f"{self.order_shop.order.customer.user.username} {self.product.name} in {self.order_shop.shop.name}"
+

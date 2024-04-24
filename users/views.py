@@ -7,6 +7,8 @@ from api.serializers import UserSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import AllowAny
+from .models import Customer
+
 
 
 class CustomerRegisterView(generics.CreateAPIView):
@@ -77,3 +79,10 @@ class UserNameView(APIView):
             return Response({'name': user.username}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@permission_classes([AllowAny])
+class CustomerView(APIView):
+    def get(self, request, customer_id):
+        customer = Customer.objects.get(id=customer_id)
+        serializer = CustomerSerializer(customer)
+        return Response(serializer.data)
