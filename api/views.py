@@ -8,16 +8,19 @@ from users.models import Customer, Shopkeeper
 from shops.models import Shops
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
+from rest_framework.decorators import permission_classes
 
 
 
 # Create your views here.
+@permission_classes([AllowAny])
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
 
+@permission_classes([IsAuthenticated])
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -70,5 +73,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         return data
 
+@permission_classes([AllowAny])
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
