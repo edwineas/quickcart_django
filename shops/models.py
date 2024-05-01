@@ -22,8 +22,8 @@ class Shops(models.Model):
     closing_time = models.TimeField()
     rating = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(5.0)],null=True, blank=True)
     image = models.ImageField(upload_to='shops/')
-    latitude = models.DecimalField(max_digits=20, decimal_places=20, null=True, blank=True)
-    longitude = models.DecimalField(max_digits=20, decimal_places=20, null=True, blank=True)
+    latitude = models.DecimalField(max_digits=40, decimal_places=20, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=40, decimal_places=20, null=True, blank=True)
 
     def __str__(self):
         return str(self.id)
