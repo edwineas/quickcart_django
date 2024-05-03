@@ -37,14 +37,9 @@ class OrderMappingView(APIView):
         # Get cart data and user location from request data
         cart = request.data.get('cartItems')
         user_location = request.data.get('location')
-
-        # Initialize Google Maps client
         load_dotenv()  # take environment variables from .env.
         gmaps = googlemaps.Client(key=os.getenv('GOOGLE_MAPS_API_KEY'))
-        # Retrieve shop data
         shops = Shops.objects.all()
-
-        # Load cache file
         cache_file = 'cache.json'
         if os.path.exists(cache_file):
             with open(cache_file, 'r') as f:
@@ -52,18 +47,19 @@ class OrderMappingView(APIView):
         else:
             cache = {}
 
-        # Calculate distances and select shops
         selected_shops = []
-        for item in cart:
+        remaining_items = cart.copy()
+        current_location = user_location
+        while remaining_items:
             distances = []
             for shop in shops:
                 # Check cache for distance
-                cache_key = f'{user_location}_{shop.latitude}_{shop.longitude}'
+                cache_key = f'{current_location}_{shop.latitude}_{shop.longitude}'
                 if cache_key in cache:
                     distance_value = cache[cache_key]
                 else:
                     # Calculate distance between user and shop
-                    distance = gmaps.distance_matrix(user_location, (shop.latitude, shop.longitude))
+                    distance = gmaps.distance_matrix(current_location, (shop.latitude, shop.longitude))
                     print("requesting distance")
 
                     # Extract the distance value
@@ -81,36 +77,29 @@ class OrderMappingView(APIView):
 
             # Select nearest shop with required product
             for shop, distance in distances:
-                inventory = Inventory.objects.filter(shop=shop, product__name=item['name'])
-                if inventory.exists() and inventory.first().quantity >= item['quantity']:
-                    inventory_item = inventory.first()
-                    product_price = inventory_item.price * item['quantity']
-                    
-                    # Check if shop is already in selected_shops
-                    shop_info = next((s for s in selected_shops if s['shop'] == shop), None)
-                    if shop_info:
-                        # If shop is already in selected_shops, add product to its list and update total price
+                shop_info = {
+                    'shop': shop,
+                    'shop_name': shop.name,
+                    'shop_rating': shop.rating,
+                    'products': [],
+                    'total_price': 0
+                }
+                for item in remaining_items.copy():
+                    inventory = Inventory.objects.filter(shop=shop, product__name=item['name'])
+                    if inventory.exists() and inventory.first().quantity >= item['quantity']:
+                        inventory_item = inventory.first()
+                        product_price = inventory_item.price * item['quantity']
                         shop_info['products'].append({
                             'product': inventory_item.product, 
                             'quantity': item['quantity'], 
                             'price': product_price
                         })
                         shop_info['total_price'] += product_price
-                    else:
-                        # If shop is not in selected_shops, add it with the product and initial total price
-                        selected_shops.append({
-                            'shop': shop,
-                            'shop_name': shop.name,
-                            'shop_rating': shop.rating,
-                            'products': [{
-                                'product': inventory_item.product, 
-                                'quantity': item['quantity'], 
-                                'price': product_price
-                            }],
-                            'total_price': product_price
-                        })
+                        remaining_items.remove(item)
+                if shop_info['products']:
+                    selected_shops.append(shop_info)
+                    current_location = (shop.latitude, shop.longitude)
                     break
-
         # Serialize and return response
         serializer = OrderSerializer(selected_shops, many=True)
         print(serializer.data)
