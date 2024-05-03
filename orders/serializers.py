@@ -1,6 +1,7 @@
 # serializers.py
 from rest_framework import serializers
 from .models import Order, OrderShop, OrderProduct
+from shops.serializers import ShopsSerializer
 from users.models import Customer
 
 
@@ -10,11 +11,17 @@ class CustomerSerializer(serializers.ModelSerializer):
         model = Customer
         fields = ['id', 'first_name', 'last_name']
 
-class OrderSerializer(serializers.ModelSerializer):
-    customer = CustomerSerializer(read_only=True)
-    class Meta:
-        model = Order
-        fields = ['id', 'date', 'customer']
+class ProductSerializer(serializers.Serializer):
+    product = serializers.StringRelatedField()
+    quantity = serializers.IntegerField()
+    price = serializers.DecimalField(max_digits=10, decimal_places=2)
+
+class OrderSerializer(serializers.Serializer):
+    shop = ShopsSerializer()
+    shop_name = serializers.CharField()
+    shop_rating = serializers.FloatField()
+    products = ProductSerializer(many=True)
+    total_price = serializers.DecimalField(max_digits=10, decimal_places=2)
 
 class OrderShopSerializer(serializers.ModelSerializer):
     order = OrderSerializer(read_only=True)
@@ -31,7 +38,6 @@ class OrderShopSerializer(serializers.ModelSerializer):
         representation['customer_name'] = f"{order_representation['customer']['first_name']} {order_representation['customer']['last_name']}"
         representation['customer_id'] = order_representation['customer']['id']
         return representation
-
 
 class OrderProductSerializer(serializers.ModelSerializer):
     class Meta:
