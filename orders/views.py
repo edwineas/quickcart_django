@@ -61,7 +61,7 @@ class OrderMappingView(APIView):
                 if not selected_shops:
                     start_location = user_location
                 else:
-                    start_location = (selected_shops[-1].latitude, selected_shops[-1].longitude)
+                    start_location = {'lat': selected_shops[-1].latitude, 'lng': selected_shops[-1].longitude}
 
                 # Check cache for distance
                 cache_key = f'{start_location}_{shop.latitude}_{shop.longitude}'
