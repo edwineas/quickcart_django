@@ -70,6 +70,7 @@ class OrderMappingView(APIView):
                 else:
                     # Calculate distance between start location and shop
                     distance = gmaps.distance_matrix(start_location, (shop.latitude, shop.longitude))
+                    print("distance is calculated")
                     distance_value = distance['rows'][0]['elements'][0]['distance']['value']
                     # Cache the calculated distance
                     cache[cache_key] = distance_value
