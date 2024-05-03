@@ -57,34 +57,27 @@ class OrderMappingView(APIView):
         for item in cart:
             distances = []
             for shop in shops:
-                # Determine the start location for distance calculation
-                if not selected_shops:
-                    start_location = user_location
-                else:
-                    start_location = {'lat': selected_shops[-1].latitude, 'lng': selected_shops[-1].longitude}
-
                 # Check cache for distance
-                cache_key = f'{start_location}_{shop.latitude}_{shop.longitude}'
+                cache_key = f'{user_location}_{shop.latitude}_{shop.longitude}'
                 if cache_key in cache:
                     distance_value = cache[cache_key]
                 else:
-                    # Calculate distance between start location and shop
-                    distance = gmaps.distance_matrix(start_location, (shop.latitude, shop.longitude))
-                    print("distance is calculated")
+                    # Calculate distance between user and shop
+                    distance = gmaps.distance_matrix(user_location, (shop.latitude, shop.longitude))
+                    print("requesting distance")
+
+                    # Extract the distance value
                     distance_value = distance['rows'][0]['elements'][0]['distance']['value']
-                    # Cache the calculated distance
+
+                    # Add distance to cache and write to file
                     cache[cache_key] = distance_value
+                    with open(cache_file, 'w') as f:
+                        json.dump(cache, f)
 
-                distances.append((distance_value, shop))
+                distances.append((shop, distance_value))
 
-            # Select the shop with the shortest distance
-            distances.sort(key=lambda x: x[0])
-            selected_shop = distances[0][1]
-            selected_shops.append(selected_shop)
-
-        # Save cache to file
-        with open(cache_file, 'w') as f:
-            json.dump(cache, f)
+            # Sort shops by distance
+            distances.sort(key=lambda x: x[1])
 
             # Select nearest shop with required product
             for shop, distance in distances:
