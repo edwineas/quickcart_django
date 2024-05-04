@@ -12,7 +12,7 @@ class ProductsSerializer(serializers.ModelSerializer):
 class ShopsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shops
-        fields = ['shopkeeper', 'name', 'address', 'phone_number', 'opening_time', 'closing_time', 'image']
+        fields = ['id','shopkeeper', 'name', 'address', 'phone_number', 'opening_time', 'closing_time', 'image']
 
 @permission_classes([AllowAny])
 class ShopViewSerializer(serializers.ModelSerializer):

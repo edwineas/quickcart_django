@@ -12,6 +12,7 @@ class CustomerSerializer(serializers.ModelSerializer):
         fields = ['id', 'first_name', 'last_name']
 
 class ProductSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
     product = serializers.StringRelatedField()
     quantity = serializers.IntegerField()
     price = serializers.DecimalField(max_digits=10, decimal_places=2)

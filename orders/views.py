@@ -1,11 +1,14 @@
 # views.py
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import OrderShop, OrderProduct
-from shops.models import Shops, Inventory
+from .models import Order, OrderShop, OrderProduct
+from users.models import Customer
+from shops.models import Shops, Inventory, Products
 from .serializers import MappingSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import permission_classes
+from rest_framework import status
+from django.core.exceptions import ObjectDoesNotExist
 import googlemaps
 import json
 import os
@@ -74,6 +77,7 @@ class OrderMappingView(APIView):
                         inventory_item = inventory.first()
                         product_price = inventory_item.price * item['quantity']
                         shop_info['products'].append({
+                            'id': inventory_item.product.id,
                             'product': inventory_item.product, 
                             'quantity': item['quantity'], 
                             'price': product_price
@@ -88,3 +92,30 @@ class OrderMappingView(APIView):
         serializer = MappingSerializer(selected_shops, many=True)
         print(serializer.data)
         return Response(serializer.data)
+
+
+class CreateOrderView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = request.data
+
+            # Create an Order
+            customer = Customer.objects.get(id=data['customer_id'])
+            order = Order.objects.create(customer=customer, price=data['total_price'])
+            # Create OrderShops and OrderProducts
+            for shop_data in data['shops']:
+                shop = Shops.objects.get(id=shop_data['shop_id'])
+                order_shop = OrderShop.objects.create(order=order, shop=shop, shop_price=shop_data['shop_total_price'], shop_name=shop_data['shop_name'])
+
+                for product_data in shop_data['products']:
+                    product = Products.objects.get(id=product_data['product_id'])
+                    OrderProduct.objects.create(order_shop=order_shop, product=product, product_name=product_data['product_name'], product_price=product_data['product_price'], product_quantity=product_data['product_quantity'])
+
+            return Response({"message": "Order created successfully"}, status=status.HTTP_201_CREATED)
+
+        except ObjectDoesNotExist as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
