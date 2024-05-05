@@ -135,6 +135,7 @@ class PostOrderView(APIView):
         for order_shop in order_shops:
             order_products = OrderProduct.objects.filter(order_shop=order_shop)
             shop_data = {
+                'order_shop_id': order_shop.id,
                 'shop_id': order_shop.shop.id,
                 'shop_name': order_shop.shop_name,
                 'shop_price': order_shop.shop_price,
@@ -157,3 +158,20 @@ class PostOrderView(APIView):
             response_data['shops'].append(shop_data)
 
         return Response(response_data)
+
+@permission_classes([AllowAny])
+class UpdatePacketPickedView(APIView):
+    def post(self, request, order_shop_id):
+        order_shop = get_object_or_404(OrderShop, id=order_shop_id)
+        order_shop.packet_picked = True
+        order_shop.save()
+
+        return Response({"message": "Packet picked status updated successfully"}, status=status.HTTP_200_OK)
+
+@permission_classes([AllowAny])
+class CheckPaymentView(APIView):
+    def get(self, request, order_shop_id):
+        order_shop = get_object_or_404(OrderShop, id=order_shop_id)
+        payment_received = order_shop.payment_received
+
+        return Response({"payment_received": payment_received})
