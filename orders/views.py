@@ -1,4 +1,4 @@
-# views.py
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Order, OrderShop, OrderProduct
@@ -113,9 +113,47 @@ class CreateOrderView(APIView):
                     product = Products.objects.get(id=product_data['product_id'])
                     OrderProduct.objects.create(order_shop=order_shop, product=product, product_name=product_data['product_name'], product_price=product_data['product_price'], product_quantity=product_data['product_quantity'])
 
-            return Response({"message": "Order created successfully"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "Order created successfully","orderid":order.id}, status=status.HTTP_201_CREATED)
 
         except ObjectDoesNotExist as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@permission_classes([AllowAny])
+class PostOrderView(APIView):
+    def get(self, request, order_id):
+        order = get_object_or_404(Order, id=order_id)
+        order_shops = OrderShop.objects.filter(order=order)
+        response_data = {
+            'order_id': order.id,
+            'price': order.price,
+            'status': order.status,
+            'shops': []
+        }
+
+        for order_shop in order_shops:
+            order_products = OrderProduct.objects.filter(order_shop=order_shop)
+            shop_data = {
+                'shop_id': order_shop.shop.id,
+                'shop_name': order_shop.shop_name,
+                'shop_price': order_shop.shop_price,
+                'packet_picked': order_shop.packet_picked,
+                'payment_received': order_shop.payment_received,
+                'latitude': order_shop.shop.latitude,
+                'longitude': order_shop.shop.longitude,
+                'products': []
+            }
+
+            for order_product in order_products:
+                product_data = {
+                    'product': order_product.product.id,
+                    'product_name': order_product.product_name,
+                    'product_price': order_product.product_price,
+                    'product_quantity': order_product.product_quantity
+                }
+                shop_data['products'].append(product_data)
+
+            response_data['shops'].append(shop_data)
+
+        return Response(response_data)
