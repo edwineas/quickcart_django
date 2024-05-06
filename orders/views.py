@@ -51,7 +51,7 @@ class OrderMappingView(APIView):
                     print("requesting distance")
 
                     # Extract the distance value
-                    distance_value = distance['rows'][0]['elements'][0]['distance']['value']
+                    distance_value = cache_data.distance_value
 
                     # Add distance to cache and write to file
                     CacheData.objects.create(cache_key=cache_key, distance_value=distance_value)
