@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Order, OrderShop, OrderProduct
+from .models import Order, OrderShop, OrderProduct, CacheData
 from users.models import Customer
 from shops.models import Shops, Inventory, Products
 from .serializers import MappingSerializer
@@ -27,12 +27,12 @@ class OrderMappingView(APIView):
         load_dotenv()  # take environment variables from .env.
         gmaps = googlemaps.Client(key=os.getenv('GOOGLE_MAPS_API_KEY'))
         shops = Shops.objects.all()
-        cache_file = 'cache.json'
-        if os.path.exists(cache_file):
-            with open(cache_file, 'r') as f:
-                cache = json.load(f)
-        else:
-            cache = {}
+        # cache_file = 'cache.json'
+        # if os.path.exists(cache_file):
+        #     with open(cache_file, 'r') as f:
+        #         cache = json.load(f)
+        # else:
+        #     cache = {}
 
         selected_shops = []
         remaining_items = cart.copy()
@@ -42,8 +42,9 @@ class OrderMappingView(APIView):
             for shop in shops:
                 # Check cache for distance
                 cache_key = f'{current_location}_{shop.latitude}_{shop.longitude}'
-                if cache_key in cache:
-                    distance_value = cache[cache_key]
+                cache_data = CacheData.objects.filter(cache_key=cache_key).first()
+                if cache_data:
+                    distance_value = cache_data.value
                 else:
                     # Calculate distance between user and shop
                     distance = gmaps.distance_matrix(current_location, (shop.latitude, shop.longitude))
@@ -53,9 +54,7 @@ class OrderMappingView(APIView):
                     distance_value = distance['rows'][0]['elements'][0]['distance']['value']
 
                     # Add distance to cache and write to file
-                    cache[cache_key] = distance_value
-                    with open(cache_file, 'w') as f:
-                        json.dump(cache, f)
+                    CacheData.objects.create(cache_key=cache_key, distance_value=distance_value)
 
                 distances.append((shop, distance_value))
 

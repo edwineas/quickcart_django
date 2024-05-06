@@ -31,3 +31,7 @@ class OrderProduct(models.Model):
     
     def __str__(self):
         return f"{self.order_shop.order.customer.user.username} {self.product.name} in {self.order_shop.shop.name}"
+
+class CacheData(models.Model):
+    cache_key = models.CharField(max_length=255, unique=True)
+    distance_value = models.FloatField()
