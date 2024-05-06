@@ -49,10 +49,8 @@ class OrderMappingView(APIView):
                     # Calculate distance between user and shop
                     distance = gmaps.distance_matrix(current_location, (shop.latitude, shop.longitude))
                     print("requesting distance")
-
-                    # Extract the distance value
-                    distance_value = cache_data.distance_value
-
+                    # Extract the distance value from the 'distance' object, not 'cache_data'
+                    distance_value = distance['rows'][0]['elements'][0]['distance']['value']
                     # Add distance to cache and write to file
                     CacheData.objects.create(cache_key=cache_key, distance_value=distance_value)
 
